@@ -11,16 +11,18 @@ const validateAction = action => {
     }
 };
 
-export const createStore = (reducer) => {
+export const createStore = (reducer, middleware) => {
     let state;
     const subscribers = [];
+    const coreDispatch = action => {
+        validateAction(action)
+        state = reducer(state, action);
+        subscribers.forEach(handler => handler());
+    };
+    const getState = () => state;
     const store = {
-        dispatch: (action) => {
-            validateAction(action)
-            state = reducer(state, action);
-            subscribers.forEach(handler => handler());
-        },
-        getState: () => state,
+        dispatch: coreDispatch,
+        getState,
         subscribe: handler => {
             subscribers.push(handler);
             return () => {
@@ -31,6 +33,50 @@ export const createStore = (reducer) => {
             };
         }
     };
-    store.dispatch({type: '@@redux/INIT'});
+
+    if (middleware) {
+        const dispatch = action => store.dispatch(action);
+        store.dispatch = middleware({
+            dispatch,
+            getState
+        })(coreDispatch);
+    }
+    coreDispatch({type: '@@redux/INIT'});
     return store;
+};
+
+export const delayMiddleware = () => next => action => {
+    setTimeout(() => {
+      next(action);
+    }, 1000);
+  };
+
+export const loggingMiddleware = ({getState}) => next => actipn => {
+    console.info('before', getState());
+    console.info('action', action);
+    const result = next(action);
+    console.info('after', getState());
+    return result;
+};
+
+export const thunkMiddleware = ({dispatch, getState}) => next => action => {
+    if (typeof action === 'function') {
+        return action(dispatch, getState);
+    }
+    return next(action);
+};
+
+export const applyMiddleware = (...middlewares) => store => {
+    if (middlewares.length === 0) {
+        return dispatch => dispatch;
+    }
+    if (middlewares.length === 1) {
+        return middlewares[0](store);
+    }
+    const boundMiddlewares = middlewares.map(middleware => 
+        middleware(store)
+    );
+    return boundMiddlewares.reduce((a, b) =>
+        next => a(b(next))
+    );
 };
