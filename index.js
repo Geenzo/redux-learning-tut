@@ -85,6 +85,24 @@ const store = createStore(reducer, applyMiddleware(
     loggingMiddleware
 ));
 
+/////////////////////
+// action creator //
+////////////////////
+const createNote = () => {
+    return (dispatch) => {
+        dispatch({
+            type: CREATE_NOTE
+        });
+        api.createNote()
+        .then(({id}) => {
+            dispatch({
+                type: CREATE_NOTE,
+                id
+            });
+        });
+    }
+}
+
 ////////////////////
 // components //
 ////////////////////
@@ -156,20 +174,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-    onAddNote: () => dispatch(
-        (dispatch) => {
-            dispatch({
-                type: CREATE_NOTE
-            });
-            api.createNote()
-            .then(({id}) => {
-                dispatch({
-                    type: CREATE_NOTE,
-                    id
-                });
-            });
-        }
-    ),
+    onAddNote: () => dispatch(createNote()),
     onChangeNote: (id, content) => dispatch({
         type: UPDATE_NOTE,
         id,
