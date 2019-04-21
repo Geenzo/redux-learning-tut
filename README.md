@@ -8,7 +8,8 @@ very basic learning demo of creating an implementation of redux to understand ho
 This snippet will create a reducer in development mode that does not allow you to edit objects.
 Will help train yourself to stop mutating objects
 
-```import deepFreeze from 'deep-freeze';
+```javascript
+import deepFreeze from 'deep-freeze';
 import reducer from 'your-reducer';
 
 const frozenReducer = process.env.NODE_ENV === 'production' ? reducer : (
@@ -16,4 +17,5 @@ const frozenReducer = process.env.NODE_ENV === 'production' ? reducer : (
     const state = reducer(...args);
     return freezeState(state);
   }
-);```
+);
+```
