@@ -19,3 +19,7 @@ const frozenReducer = process.env.NODE_ENV === 'production' ? reducer : (
   }
 );
 ```
+
+### more info ###
+
+[referenced tut](https://zapier.com/engineering/how-to-build-redux/)
